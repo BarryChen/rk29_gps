@@ -568,7 +568,7 @@ nmea_reader_parse( NmeaReader*  r )
         Token tok_VDOP  = nmea_tokenizer_get(tzer,16);
         Token tok_pnr[12];
 
-				r->fix.flags |= GPS_LOCATION_HAS_ACCURACY;
+	r->fix.flags |= GPS_LOCATION_HAS_ACCURACY;
         //r->fix.accuracy = g_nav_data.P_DOP;
         
         for(i = 0; i < 12; i ++)
@@ -664,13 +664,13 @@ nmea_reader_parse( NmeaReader*  r )
 
             nmea_reader_update_bearing( r, tok_bearing );
             nmea_reader_update_speed  ( r, tok_speed );
-        }
 
-	if (r->fix.flags != 0) {
-	    if (r->callback.location_cb ) {
-		D("%s: report RMC", __FUNCTION__); 
-	        r->callback.location_cb( &r->fix );
-	        r->fix.flags = 0;
+	    if (r->fix.flags != 0) {
+		if (r->callback.location_cb ) {
+		    D("%s: report RMC", __FUNCTION__); 
+		    r->callback.location_cb( &r->fix );
+		    r->fix.flags = 0;
+		}
 	    }
 	}
     } else {
@@ -724,7 +724,6 @@ nmea_reader_addc( NmeaReader*  r, int  c )
 /*****                                                       *****/
 /*****       C O N N E C T I O N   S T A T E                 *****/
 /*****                                                       *****/
-/*****************************************************************/
 /*****************************************************************/
 
 
@@ -1038,4 +1037,5 @@ const GpsInterface* gps_get_hardware_interface()
     D("\nGPS is to get hardware interface!\n");
 	return &hardwareGpsInterface;
 }
+
 
