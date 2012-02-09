@@ -222,8 +222,8 @@ nmea_reader_init( NmeaReader*  r )
     r->utc_mon  = -1;
     r->utc_day  = -1;
     r->callback.location_cb = NULL;
-	r->callback.status_cb = NULL;
-	r->callback.sv_status_cb = NULL;
+    r->callback.status_cb = NULL;
+    r->callback.sv_status_cb = NULL;
 
     nmea_reader_update_utc_diff( r );
 }
@@ -509,6 +509,7 @@ nmea_reader_parse( NmeaReader*  r )
     D("Received: '%.*s'", r->pos, r->in);
     if (r->pos < 9) {
         D("Too short. discarded.");
+	r->fix.flags = 0;
         return;
     }
 
@@ -549,12 +550,13 @@ nmea_reader_parse( NmeaReader*  r )
                                       tok_longitudeHemi.p[0]);
         nmea_reader_update_altitude(r, tok_altitude, tok_altitudeUnits);
 
-		if (r->fix.flags != 0) {
-	        if (r->callback.location_cb ) {
-	            r->callback.location_cb( &r->fix );
-	            r->fix.flags = 0;
-	        }
-		}
+	if (r->fix.flags != 0) {
+	    if (r->callback.location_cb ) {
+		D("%s: report GGA", __FUNCTION__);
+	        r->callback.location_cb( &r->fix );
+	        r->fix.flags = 0;
+	    }
+	}
 
     } else if ( !memcmp(tok.p, "GSA", 3) ) {
         // do something ?
@@ -595,6 +597,7 @@ nmea_reader_parse( NmeaReader*  r )
 	
 	int sat_index = str2num(tok_sat_gsv_index) - 1;
 	int sat_total    = str2num(tok_sat_gsv_total) - 1;
+	D("Found sat : %d \n", sat_total);
 	D("sat_index: %d\n", sat_index);
     Token tok_sat_num 		= nmea_tokenizer_get(tzer,3);
 	tok_sat_pnr[0] 		= nmea_tokenizer_get(tzer,4);
@@ -663,12 +666,13 @@ nmea_reader_parse( NmeaReader*  r )
             nmea_reader_update_speed  ( r, tok_speed );
         }
 
-		if (r->fix.flags != 0) {
-	        if (r->callback.location_cb ) {
-	            r->callback.location_cb( &r->fix );
-	            r->fix.flags = 0;
-	        }
-		}
+	if (r->fix.flags != 0) {
+	    if (r->callback.location_cb ) {
+		D("%s: report RMC", __FUNCTION__); 
+	        r->callback.location_cb( &r->fix );
+	        r->fix.flags = 0;
+	    }
+	}
     } else {
         tok.p -= 2;
         D("unknown sentence '%.*s", tok.end-tok.p, tok.p);
@@ -730,7 +734,7 @@ typedef struct {
 	int                     start;
     pthread_t               thread;
 	pthread_mutex_t         mutex;
-    GpsCallbacks            callbacks;
+    GpsCallbacks            callbacks; // JNI GPS_Callbacks
 } GpsState;
 
 static GpsState    _gps_state[1];
