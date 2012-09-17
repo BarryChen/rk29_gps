@@ -35,6 +35,19 @@
 #include "brcm_types.h"
 #include "lbs.h"
 
+#ifndef LOGD
+#define LOGD(...) ALOGD( __VA_ARGS__)
+#endif
+
+#ifndef LOGE
+#define LOGE(...) ALOGE( __VA_ARGS__)
+#endif
+
+#ifndef LOGW
+#define LOGW(...) ALOGW( __VA_ARGS__)
+#endif
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
