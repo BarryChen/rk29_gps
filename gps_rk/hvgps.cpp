@@ -208,6 +208,10 @@ static int hv_gps_init(GpsCallbacks* callbacks)
 static void hv_gps_cleanup(void)
 {
 	LOGE("hv_gps_cleanup--------------------------");
+	
+	WaitSem(&s_hStopSem,180000); //3 minute
+return;
+
 
 	g_GPSInited = false;
 	g_GPSStarted = false;
@@ -232,8 +236,6 @@ static void hv_gps_cleanup(void)
 ///////////////////////////////////////////////////////////////////////////////////
 void  StopThread(void *pData)
 {
-	
-	WaitSem(&s_hStopSem,180000); //3 minute
 	
 	GPS_Stop();
 
@@ -271,6 +273,12 @@ static int hv_gps_start()
 	(*g_sv_status_cb)(&sv_inf);
 
 	WaitSem(&s_hStopSem,180000); //3 minute
+
+  if(g_GPSStarted)
+  {
+         sem_post(&s_hStopSem);
+         return -1;
+  }
 
 	unsigned long  u32ParameterAge = 604800;
 
@@ -328,10 +336,16 @@ static int hv_gps_start()
 static int hv_gps_stop()
 {
 	D("About to deinitgbc");
+	
+	WaitSem(&s_hStopSem,180000); //3 minute
 
 	PAL_CreateThread_JNI( (void *)StopThread, NULL, 0 );
 
 	return 0;
+}
+
+void hv_gps_reset()
+{
 }
 
 /*****************************************************************/
